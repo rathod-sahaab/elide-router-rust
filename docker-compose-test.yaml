@@ -1,0 +1,43 @@
+version: "3.4"
+services:
+  elide_test:
+    container_name: "elide_test"
+    build:
+      context: .
+      dockerfile: "Dockerfile.test"
+      cache_from: 
+        - rust:latest
+    links:
+      - "postgres"
+    depends_on:
+      - "postgres"
+    environment:
+      - DATABASE_URL=postgres://elide:elide@postgres:5432/elide
+    networks:
+      - elide
+    volumes: 
+      - ./:/app
+    tty: true
+    ports:
+      - "9600:9600"
+    
+  postgres:
+    image: postgres:alpine
+    volumes:
+      - pg_actix:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "elide" 
+      POSTGRES_PASSWORD: "elide"
+      PGPASSWORD: "elide"
+    networks:
+      - elide
+    ports:
+      - "5432:5432"
+
+networks:
+  elide:
+    driver: bridge
+
+volumes:
+    pg_actix:
+        driver: local
