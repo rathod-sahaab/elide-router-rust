@@ -1,6 +1,6 @@
 use crate::actix::{Actor, Handler, Message, SyncContext};
 use crate::diesel::prelude::*;
-use crate::models::{Article, NewArticle};
+use crate::models::articles::{Article, NewArticle};
 use crate::schema::articles::dsl::{articles, body, published, title, uuid as auuid};
 use uuid::Uuid;
 

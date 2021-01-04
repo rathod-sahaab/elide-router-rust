@@ -19,7 +19,8 @@ use actix::SyncArbiter;
 use actors::db::articles::{Create, Delete, GetArticles, Publish, Update};
 use actors::db::DbActor;
 use db_utils::{get_pool, run_migrations};
-use models::{AppState, ArticleData};
+use models::articles::ArticleData;
+use models::AppState;
 use std::env;
 use uuid::Uuid;
 
