@@ -4,30 +4,39 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-mod models;
-mod db_utils;
-mod schema;
 mod actors;
+mod db_utils;
+mod models;
+mod schema;
 
-use actix_web::{App, HttpResponse, HttpServer, Responder, delete, get, patch, post, put, web::{self, Data, Json, Path}};
+use actix_web::{
+    delete, get, patch, post, put,
+    web::{self, Data, Json, Path},
+    App, HttpResponse, HttpServer, Responder,
+};
 
 use actix::SyncArbiter;
-use actors::db::{Create, DbActor, Delete, GetArticles, Publish, Update};
+use actors::db::articles::{Create, Delete, GetArticles, Publish, Update};
+use actors::db::DbActor;
 use db_utils::{get_pool, run_migrations};
 use models::{AppState, ArticleData};
 use std::env;
 use uuid::Uuid;
-
-
 
 #[post("/new")]
 async fn create_article(article: Json<ArticleData>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
     let article = article.into_inner();
 
-    match db.send(Create { title: article.title, body: article.body }).await {
+    match db
+        .send(Create {
+            title: article.title,
+            body: article.body,
+        })
+        .await
+    {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
-        _ => HttpResponse::InternalServerError().json("Something went wrong")
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
 
@@ -38,7 +47,7 @@ async fn publish_article(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl 
     match db.send(Publish { uuid }).await {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
         Ok(Err(_)) => HttpResponse::NotFound().json("Article not found"),
-        _ => HttpResponse::InternalServerError().json("Something went wrong")
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
 
@@ -49,19 +58,30 @@ async fn delete_article(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl R
     match db.send(Delete { uuid }).await {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
         Ok(Err(_)) => HttpResponse::NotFound().json("Article not found"),
-        _ => HttpResponse::InternalServerError().json("Something went wrong")
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
 
 #[put("/{uuid}")]
-async fn update_article(Path(uuid): Path<Uuid>, article: Json<ArticleData>, state: Data<AppState>) -> impl Responder {
+async fn update_article(
+    Path(uuid): Path<Uuid>,
+    article: Json<ArticleData>,
+    state: Data<AppState>,
+) -> impl Responder {
     let db = state.as_ref().db.clone();
     let article = article.into_inner();
 
-    match db.send(Update { uuid, title: article.title, body: article.body }).await {
+    match db
+        .send(Update {
+            uuid,
+            title: article.title,
+            body: article.body,
+        })
+        .await
+    {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
         Ok(Err(_)) => HttpResponse::NotFound().json("Article not found"),
-        _ => HttpResponse::InternalServerError().json("Something went wrong")
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
 
@@ -71,7 +91,7 @@ async fn get_published(state: Data<AppState>) -> impl Responder {
 
     match db.send(GetArticles).await {
         Ok(Ok(articles)) => HttpResponse::Ok().json(articles),
-        _ => HttpResponse::InternalServerError().json("Something went wrong")
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
 
@@ -90,7 +110,7 @@ async fn main() -> std::io::Result<()> {
             .service(create_article)
             .service(update_article)
             .data(AppState {
-                db: db_addr.clone()
+                db: db_addr.clone(),
             })
     })
     .bind(("0.0.0.0", 9600))?
