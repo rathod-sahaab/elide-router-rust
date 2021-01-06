@@ -113,26 +113,3 @@ impl Handler<DeleteRoute> for DbActor {
             .get_result::<Route>(&conn)
     }
 }
-
-// impl Handler<PublishRoute> for DbActor {
-//     type Result = QueryResult<Route>;
-
-//     fn handle(&mut self, msg: PublishRoute, _: &mut Self::Context) -> Self::Result {
-//         let conn = self.0.get().expect("Unable to get a connection");
-//         diesel::update(routes)
-//             .filter(auuid.eq(msg.uuid))
-//             .set(published.eq(true))
-//             .get_result::<Route>(&conn)
-//     }
-// }
-
-// impl Handler<GetRoutes> for DbActor {
-//     type Result = QueryResult<Vec<Route>>;
-
-//     fn handle(&mut self, _: GetRoutes, _: &mut Self::Context) -> Self::Result {
-//         let conn = self.0.get().expect("Unable to get a connection");
-//         routes
-//             .filter(published.eq(true))
-//             .get_results::<Route>(&conn)
-//     }
-// }
