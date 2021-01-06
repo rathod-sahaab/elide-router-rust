@@ -1,4 +1,4 @@
-use crate::actix::{Actor, Handler, Message, SyncContext};
+use crate::actix::{Handler, Message};
 use crate::diesel::prelude::*;
 use crate::models::articles::{Article, NewArticle};
 use crate::schema::articles::dsl::{articles, body, published, title, uuid as auuid};
@@ -8,14 +8,14 @@ use crate::actors::db::DbActor;
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<Article>")]
-pub struct Create {
+pub struct CreateArticle {
     pub title: String,
     pub body: String,
 }
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<Article>")]
-pub struct Update {
+pub struct UpdateArticle {
     pub uuid: Uuid,
     pub title: String,
     pub body: String,
@@ -23,13 +23,13 @@ pub struct Update {
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<Article>")]
-pub struct Delete {
+pub struct DeleteArticle {
     pub uuid: Uuid,
 }
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<Article>")]
-pub struct Publish {
+pub struct PublishArticle {
     pub uuid: Uuid,
 }
 
@@ -37,14 +37,10 @@ pub struct Publish {
 #[rtype(result = "QueryResult<Vec<Article>>")]
 pub struct GetArticles;
 
-impl Actor for DbActor {
-    type Context = SyncContext<Self>;
-}
-
-impl Handler<Create> for DbActor {
+impl Handler<CreateArticle> for DbActor {
     type Result = QueryResult<Article>;
 
-    fn handle(&mut self, msg: Create, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: CreateArticle, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connectio");
         let new_article = NewArticle {
             uuid: Uuid::new_v4(),
@@ -58,10 +54,10 @@ impl Handler<Create> for DbActor {
     }
 }
 
-impl Handler<Update> for DbActor {
+impl Handler<UpdateArticle> for DbActor {
     type Result = QueryResult<Article>;
 
-    fn handle(&mut self, msg: Update, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: UpdateArticle, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connectio");
 
         diesel::update(articles)
@@ -71,10 +67,10 @@ impl Handler<Update> for DbActor {
     }
 }
 
-impl Handler<Delete> for DbActor {
+impl Handler<DeleteArticle> for DbActor {
     type Result = QueryResult<Article>;
 
-    fn handle(&mut self, msg: Delete, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: DeleteArticle, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connectio");
 
         diesel::delete(articles)
@@ -83,10 +79,10 @@ impl Handler<Delete> for DbActor {
     }
 }
 
-impl Handler<Publish> for DbActor {
+impl Handler<PublishArticle> for DbActor {
     type Result = QueryResult<Article>;
 
-    fn handle(&mut self, msg: Publish, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: PublishArticle, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connectio");
         diesel::update(articles)
             .filter(auuid.eq(msg.uuid))

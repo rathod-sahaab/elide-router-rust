@@ -6,3 +6,4 @@ pub struct AppState {
 }
 
 pub mod articles;
+pub mod routes;

@@ -10,13 +10,15 @@ mod models;
 mod schema;
 
 use actix_web::{
-    delete, get, patch, post, put,
+    delete, get, post, put,
     web::{self, Data, Json, Path},
     App, HttpResponse, HttpServer, Responder,
 };
 
 use actix::SyncArbiter;
-use actors::db::articles::{Create, Delete, GetArticles, Publish, Update};
+use actors::db::articles::{
+    CreateArticle, DeleteArticle, GetArticles, PublishArticle, UpdateArticle,
+};
 use actors::db::DbActor;
 use db_utils::{get_pool, run_migrations};
 use models::articles::ArticleData;
@@ -30,7 +32,7 @@ async fn create_article(article: Json<ArticleData>, state: Data<AppState>) -> im
     let article = article.into_inner();
 
     match db
-        .send(Create {
+        .send(CreateArticle {
             title: article.title,
             body: article.body,
         })
@@ -45,7 +47,7 @@ async fn create_article(article: Json<ArticleData>, state: Data<AppState>) -> im
 async fn publish_article(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
 
-    match db.send(Publish { uuid }).await {
+    match db.send(PublishArticle { uuid }).await {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
         Ok(Err(_)) => HttpResponse::NotFound().json("Article not found"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
@@ -56,7 +58,7 @@ async fn publish_article(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl 
 async fn delete_article(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
 
-    match db.send(Delete { uuid }).await {
+    match db.send(DeleteArticle { uuid }).await {
         Ok(Ok(article)) => HttpResponse::Ok().json(article),
         Ok(Err(_)) => HttpResponse::NotFound().json("Article not found"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
@@ -73,7 +75,7 @@ async fn update_article(
     let article = article.into_inner();
 
     match db
-        .send(Update {
+        .send(UpdateArticle {
             uuid,
             title: article.title,
             body: article.body,
