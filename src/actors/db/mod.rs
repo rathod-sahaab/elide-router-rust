@@ -12,3 +12,4 @@ impl Actor for DbActor {
 
 pub mod articles;
 pub mod routes;
+pub mod users;

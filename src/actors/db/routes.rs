@@ -86,17 +86,12 @@ impl Handler<UpdateRoute> for DbActor {
     fn handle(&mut self, msg: UpdateRoute, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connection");
 
-        // FIXME: set doesn't take optional value
-        let activate: bool = match msg.active {
-            Some(is_active) => is_active,
-            None => true,
-        };
         diesel::update(routes)
             .filter(auuid.eq(msg.uuid))
             .set((
                 slug.eq(msg.slug),
                 target.eq(msg.target),
-                active.eq(activate),
+                active.eq(msg.active.unwrap_or(true)),
             ))
             .get_result::<Route>(&conn)
     }
