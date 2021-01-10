@@ -54,6 +54,7 @@ async fn update_user(
     }
 }
 
+// TODO: Obtain uuid from JWT
 #[delete("/{uuid}")]
 async fn delete_user(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
