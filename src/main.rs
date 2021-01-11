@@ -4,19 +4,21 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+extern crate sodiumoxide;
+
 mod actors;
-mod db_utils;
 mod models;
 mod routes;
 mod schema;
+mod utils;
 
 use actix_web::{web::scope, App, HttpServer};
 
 use actix::SyncArbiter;
 use actors::db::DbActor;
-use db_utils::{get_pool, run_migrations};
 use models::AppState;
 use std::env;
+use utils::db::{get_pool, run_migrations};
 
 use routes::{
     articles::{create_article, delete_article, get_published, publish_article, update_article},

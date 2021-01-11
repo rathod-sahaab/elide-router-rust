@@ -1,6 +1,7 @@
 use crate::actors::db::users::{CreateUser, DeleteUser, UpdateUser};
 use crate::models::users::{UpdateUserData, UserData};
 use crate::models::AppState;
+use crate::utils::crypto::hash;
 
 use actix_web::{
     delete, post, put,
@@ -13,13 +14,14 @@ use uuid::Uuid;
 async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
-
+    let password_hash = hash(user.password).0;
     match db
         .send(CreateUser {
             email: user.email,
             display_name: user.display_name,
             username: user.username,
-            password_hash: user.password_hash,
+            // remove null character to store in postgres
+            password_hash: password_hash.trim_matches(char::from(0)).to_string(),
         })
         .await
     {
@@ -38,13 +40,18 @@ async fn update_user(
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
 
+    // TODO: Use a more elegant solution
+    // let password_hash =
     match db
         .send(UpdateUser {
             uuid,
             email: user.email,
             display_name: user.display_name,
             username: user.username,
-            password_hash: user.password_hash,
+            password_hash: user
+                .password
+                // remove null character to store in postgres
+                .map(|pass| hash(pass).0.trim_matches(char::from(0)).to_string()),
         })
         .await
     {

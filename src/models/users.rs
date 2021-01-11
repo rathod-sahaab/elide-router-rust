@@ -13,6 +13,7 @@ pub struct User {
     /// Username
     pub username: String,
     /// bcrypt hash of the password
+    #[serde(skip_serializing)]
     pub password_hash: String,
     /// email id of user
     pub email: String,
@@ -43,7 +44,7 @@ pub struct UserData {
     /// Username
     pub username: String,
     /// bcrypt hash of the password
-    pub password_hash: String,
+    pub password: String,
     /// email id of user
     pub email: String,
 }
@@ -56,7 +57,7 @@ pub struct UpdateUserData {
     /// Username
     pub username: Option<String>,
     /// bcrypt hash of the password
-    pub password_hash: Option<String>,
+    pub password: Option<String>,
     /// email id of user
     pub email: Option<String>,
 }
