@@ -34,30 +34,3 @@ pub struct NewUser {
     /// email id of user
     pub email: String,
 }
-
-// FIXME: this is not needed replace when known how to check all optional fields are some
-#[derive(Serialize, Deserialize)]
-/// To receive data from HTTP request thus Uuid not required
-pub struct UserData {
-    /// Name to be displayed, mostly real name
-    pub display_name: String,
-    /// Username
-    pub username: String,
-    /// bcrypt hash of the password
-    pub password: String,
-    /// email id of user
-    pub email: String,
-}
-
-#[derive(Serialize, Deserialize)]
-/// To receive data from HTTP request thus Uuid not required
-pub struct UpdateUserData {
-    /// Name to be displayed, mostly real name
-    pub display_name: Option<String>,
-    /// Username
-    pub username: Option<String>,
-    /// bcrypt hash of the password
-    pub password: Option<String>,
-    /// email id of user
-    pub email: Option<String>,
-}

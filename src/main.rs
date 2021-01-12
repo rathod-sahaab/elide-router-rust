@@ -24,7 +24,7 @@ use routes::{
     articles::{create_article, delete_article, get_published, publish_article, update_article},
     redirects::redirect_by_slug,
     routes::{create_route, delete_route, update_route},
-    users::{create_user, delete_user, update_user},
+    users::{create_user, login_user, delete_user, update_user},
 };
 
 #[actix_web::main]
@@ -55,6 +55,7 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         scope("/users/")
                             .service(create_user)
+                            .service(login_user)
                             .service(update_user)
                             .service(delete_user),
                     ),

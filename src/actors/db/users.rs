@@ -25,6 +25,12 @@ pub struct GetUser {
 }
 
 #[derive(Message)]
+#[rtype(result = "QueryResult<User>")]
+pub struct GetUserByUsername {
+    pub username: String,
+}
+
+#[derive(Message)]
 #[rtype(result = "QueryResult<bool>")]
 pub struct CheckUserNameExists {
     pub username: String,
@@ -106,6 +112,16 @@ impl Handler<GetUser> for DbActor {
         users_q.filter(auuid.eq(msg.uuid)).get_result::<User>(&conn)
     }
 }
+
+impl Handler<GetUserByUsername> for DbActor {
+    type Result = QueryResult<User>;
+    fn handle(&mut self, msg: GetUserByUsername, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        users_q.filter(username.eq(msg.username)).get_result::<User>(&conn)
+    }
+}
+
 impl Handler<CheckUserNameExists> for DbActor {
     type Result = QueryResult<bool>;
     fn handle(&mut self, msg: CheckUserNameExists, _: &mut Self::Context) -> Self::Result {

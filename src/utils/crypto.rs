@@ -12,9 +12,13 @@ pub fn hash(passwd: String) -> (String, argon2id13::HashedPassword) {
     (texthash, hash)
 }
 
-pub fn verify(hash: [u8; 128], passwd: &str) -> bool {
+pub fn verify(hash: &str, passwd: String) -> bool {
     sodiumoxide::init().unwrap();
-    match argon2id13::HashedPassword::from_slice(&hash) {
+    let mut padded_hash = [0u8; 128];
+    hash.as_bytes().iter().enumerate().for_each(|(i, val)| {
+        padded_hash[i] = *val;
+    });
+    match argon2id13::HashedPassword::from_slice(&padded_hash) {
         Some(hp) => argon2id13::pwhash_verify(&hp, passwd.as_bytes()),
         _ => false,
     }
