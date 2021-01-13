@@ -5,6 +5,5 @@ pub struct AppState {
     pub db: Addr<DbActor>,
 }
 
-pub mod articles;
 pub mod routes;
 pub mod users;

@@ -10,6 +10,5 @@ impl Actor for DbActor {
     type Context = SyncContext<Self>;
 }
 
-pub mod articles;
 pub mod routes;
 pub mod users;

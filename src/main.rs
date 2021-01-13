@@ -4,12 +4,12 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-extern crate sodiumoxide;
 extern crate chrono;
+extern crate sodiumoxide;
 
 mod actors;
-mod models;
 mod handlers;
+mod models;
 mod schema;
 mod utils;
 
@@ -22,10 +22,9 @@ use std::env;
 use utils::db::{get_pool, run_migrations};
 
 use handlers::{
-    articles::{create_article, delete_article, get_published, publish_article, update_article},
     redirects::redirect_by_slug,
     routes::{create_route, delete_route, update_route},
-    users::{create_user, login_user, delete_user, update_user},
+    users::{create_user, delete_user, login_user, update_user},
 };
 
 #[actix_web::main]
@@ -39,14 +38,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(
                 scope("/api/")
-                    .service(
-                        scope("/articles/")
-                            .service(get_published)
-                            .service(delete_article)
-                            .service(publish_article)
-                            .service(create_article)
-                            .service(update_article),
-                    )
                     .service(
                         scope("/routes/")
                             .service(create_route)
