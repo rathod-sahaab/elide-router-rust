@@ -17,12 +17,16 @@ table! {
 }
 
 table! {
-    users (uuid) {
-        uuid -> Uuid,
+    users (id) {
+        id -> Uuid,
         display_name -> Varchar,
         username -> Varchar,
         password_hash -> Varchar,
         email -> Varchar,
+        email_verified -> Bool,
+        active -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 

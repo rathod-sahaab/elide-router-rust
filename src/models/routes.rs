@@ -20,8 +20,6 @@ pub struct Route {
 #[table_name = "routes"]
 /// To insert data in DB
 pub struct NewRoute {
-    /// Unique identifier, used by link admin
-    pub uuid: Uuid,
     /// slug part of elide URL, elide.com/this-is-slug
     pub slug: String,
     /// Target where requestee should be redirected

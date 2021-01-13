@@ -59,7 +59,6 @@ impl Handler<CreateRoute> for DbActor {
     fn handle(&mut self, msg: CreateRoute, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connection");
         let new_route = NewRoute {
-            uuid: Uuid::new_v4(),
             slug: msg.slug,
             target: msg.target,
             active: msg.active,

@@ -5,10 +5,11 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 extern crate sodiumoxide;
+extern crate chrono;
 
 mod actors;
 mod models;
-mod routes;
+mod handlers;
 mod schema;
 mod utils;
 
@@ -20,7 +21,7 @@ use models::AppState;
 use std::env;
 use utils::db::{get_pool, run_migrations};
 
-use routes::{
+use handlers::{
     articles::{create_article, delete_article, get_published, publish_article, update_article},
     redirects::redirect_by_slug,
     routes::{create_route, delete_route, update_route},

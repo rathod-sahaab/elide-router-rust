@@ -86,10 +86,10 @@ async fn login_user(login_data: Json<UserLoginData>, state: Data<AppState>) -> i
     }
 }
 
-// TODO: Obtain uuid from JWT
-#[put("/{uuid}")]
+// TODO: Obtain id from JWT
+#[put("/{id}")]
 async fn update_user(
-    Path(uuid): Path<Uuid>,
+    Path(id): Path<Uuid>,
     user: Json<UpdateUserData>,
     state: Data<AppState>,
 ) -> impl Responder {
@@ -100,7 +100,7 @@ async fn update_user(
     // let password_hash =
     match db
         .send(UpdateUser {
-            uuid,
+            id,
             email: user.email,
             display_name: user.display_name,
             username: user.username,
@@ -117,12 +117,12 @@ async fn update_user(
     }
 }
 
-// TODO: Obtain uuid from JWT
-#[delete("/{uuid}")]
-async fn delete_user(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl Responder {
+// TODO: Obtain id from JWT
+#[delete("/{id}")]
+async fn delete_user(Path(id): Path<Uuid>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
 
-    match db.send(DeleteUser { uuid }).await {
+    match db.send(DeleteUser { id }).await {
         Ok(Ok(user)) => HttpResponse::Ok().json(user),
         Ok(Err(_)) => HttpResponse::NotFound().json("User not found"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),

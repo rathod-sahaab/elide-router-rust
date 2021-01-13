@@ -10,6 +10,7 @@ actix-web = "3.3.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "0.6.5", features = ["v4", "serde"] }
-diesel = { version = "1.4.5", features = ["uuid", "r2d2", "postgres"] }
+chrono = { version = "0.4", features = ["serde"] }
+diesel = { version = "1.4.5", features = ["uuid", "r2d2", "postgres", "chrono"] }
 diesel_migrations = "1.4.0"
 sodiumoxide = "0.2.6"

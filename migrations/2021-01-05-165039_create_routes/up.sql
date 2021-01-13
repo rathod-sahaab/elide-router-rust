@@ -1,6 +1,7 @@
--- Your SQL goes here
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE routes (
-    uuid UUID PRIMARY KEY,
+    id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     slug UNIQUE VARCHAR NOT NULL,
     target VARCHAR NOT NULL,
     active BOOLEAN NOT NULL DEFAULT 't'

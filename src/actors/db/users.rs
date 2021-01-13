@@ -1,11 +1,11 @@
 use crate::actix::{Handler, Message};
+use crate::actors::db::DbActor;
 use crate::diesel::prelude::*;
 use crate::models::users::{NewUser, User};
 use crate::schema::users;
-use crate::schema::users::dsl::{username, users as users_q, uuid as auuid};
-use uuid::Uuid;
+use crate::schema::users::dsl::{id, username, users as users_q};
 
-use crate::actors::db::DbActor;
+use uuid::Uuid;
 
 // Create messages
 #[derive(Message)]
@@ -21,7 +21,7 @@ pub struct CreateUser {
 #[derive(Message)]
 #[rtype(result = "QueryResult<User>")]
 pub struct GetUser {
-    pub uuid: Uuid,
+    pub id: Uuid,
 }
 
 #[derive(Message)]
@@ -38,40 +38,12 @@ pub struct CheckUserNameExists {
 
 // Update messages
 
-// #[derive(Message)]
-// #[rtype(result = "QueryResult<bool>")]
-// pub struct UpdateUsername {
-//     pub uuid: Uuid,
-//     pub username: String,
-// }
-
-// #[derive(Message)]
-// #[rtype(result = "QueryResult<bool>")]
-// pub struct UpdateEmail {
-//     pub uuid: Uuid,
-//     pub email: String,
-// }
-
-// #[derive(Message)]
-// #[rtype(result = "QueryResult<bool>")]
-// pub struct UpdateDisplayName {
-//     pub uuid: Uuid,
-//     pub display_name: String,
-// }
-
-// #[derive(Message)]
-// #[rtype(result = "QueryResult<bool>")]
-// pub struct UpdatePassword {
-//     pub uuid: Uuid,
-//     pub password_hash: String,
-// }
-
 // FIXME:
 #[derive(Message, AsChangeset)]
 #[rtype(result = "QueryResult<User>")]
 #[table_name = "users"]
 pub struct UpdateUser {
-    pub uuid: Uuid,
+    pub id: Uuid,
     pub display_name: Option<String>,
     pub email: Option<String>,
     pub password_hash: Option<String>,
@@ -82,7 +54,7 @@ pub struct UpdateUser {
 #[derive(Message)]
 #[rtype(result = "QueryResult<User>")]
 pub struct DeleteUser {
-    pub uuid: Uuid,
+    pub id: Uuid,
 }
 
 impl Handler<CreateUser> for DbActor {
@@ -91,7 +63,6 @@ impl Handler<CreateUser> for DbActor {
     fn handle(&mut self, msg: CreateUser, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connection");
         let new_user = NewUser {
-            uuid: Uuid::new_v4(),
             email: msg.email,
             display_name: msg.display_name,
             username: msg.username,
@@ -109,7 +80,7 @@ impl Handler<GetUser> for DbActor {
     fn handle(&mut self, msg: GetUser, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connection");
 
-        users_q.filter(auuid.eq(msg.uuid)).get_result::<User>(&conn)
+        users_q.filter(id.eq(msg.id)).get_result::<User>(&conn)
     }
 }
 
@@ -118,7 +89,9 @@ impl Handler<GetUserByUsername> for DbActor {
     fn handle(&mut self, msg: GetUserByUsername, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get().expect("Unable to get a connection");
 
-        users_q.filter(username.eq(msg.username)).get_result::<User>(&conn)
+        users_q
+            .filter(username.eq(msg.username))
+            .get_result::<User>(&conn)
     }
 }
 
@@ -141,7 +114,7 @@ impl Handler<UpdateUser> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::update(users_q)
-            .filter(auuid.eq(msg.uuid))
+            .filter(id.eq(msg.id))
             .set(msg)
             .get_result::<User>(&conn)
     }
@@ -154,7 +127,7 @@ impl Handler<DeleteUser> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::delete(users_q)
-            .filter(auuid.eq(msg.uuid))
+            .filter(id.eq(msg.id))
             .get_result::<User>(&conn)
     }
 }
