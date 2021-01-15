@@ -1,15 +1,18 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE users (
+CREATE TABLE routes (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    display_name VARCHAR NOT NULL,
-    username VARCHAR NOT NULL UNIQUE,
-    password_hash VARCHAR NOT NULL,
-    email VARCHAR NOT NULL UNIQUE,
-    email_verified BOOLEAN NOT NULL DEFAULT 'f',
+    slug VARCHAR NOT NULL UNIQUE ,
+    target VARCHAR NOT NULL,
+    creator_id UUID,
     active BOOLEAN NOT NULL DEFAULT 't',
+    active_from TIMESTAMP, -- time based activation
+    active_till TIMESTAMP, -- time based deactivation
     created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    CONSTRAINT fk_user
+        FOREIGN KEY(creator_id) 
+        REFERENCES users(id)
 );
 
 -- To automatically refresh updated_at
@@ -25,4 +28,4 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER refresh_user_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE  refresh_updated_at();
+CREATE TRIGGER refresh_route_updated_at BEFORE UPDATE ON routes FOR EACH ROW EXECUTE PROCEDURE  refresh_updated_at();

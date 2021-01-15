@@ -13,16 +13,18 @@ pub struct User {
     /// Name to be displayed, mostly real name
     pub display_name: String,
     pub username: String,
-    /// bcrypt hash of the password
+    /// argon hash of the password
     #[serde(skip_serializing)]
     pub password_hash: String,
     /// email id of user
     pub email: String,
-    #[serde(skip_serializing)]
+    // is email verified
     pub email_verified: bool,
-    #[serde(skip_serializing)]
+    // is user active
     pub active: bool,
+    #[serde(skip_serializing)]
     pub created_at: NaiveDateTime,
+    #[serde(skip_serializing)]
     pub updated_at: NaiveDateTime,
 }
 

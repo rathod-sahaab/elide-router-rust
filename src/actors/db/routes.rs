@@ -1,7 +1,7 @@
 use crate::actix::{Handler, Message};
 use crate::diesel::prelude::*;
 use crate::models::routes::{NewRoute, Route};
-use crate::schema::routes::dsl::{active, routes, slug, target, uuid as auuid};
+use crate::schema::routes::dsl::*;
 use uuid::Uuid;
 
 use crate::actors::db::DbActor;
@@ -86,7 +86,7 @@ impl Handler<UpdateRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::update(routes)
-            .filter(auuid.eq(msg.uuid))
+            .filter(id.eq(msg.uuid))
             .set((
                 slug.eq(msg.slug),
                 target.eq(msg.target),
@@ -103,7 +103,7 @@ impl Handler<DeleteRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::delete(routes)
-            .filter(auuid.eq(msg.uuid))
+            .filter(id.eq(msg.uuid))
             .get_result::<Route>(&conn)
     }
 }
