@@ -4,6 +4,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+extern crate validator;
 extern crate chrono;
 extern crate sodiumoxide;
 

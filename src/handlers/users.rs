@@ -1,7 +1,8 @@
 use crate::actors::db::users::{CreateUser, DeleteUser, GetUserByUsername, UpdateUser};
 use crate::models::AppState;
 use crate::utils::crypto::{hash, verify};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use validator::Validate;
 
 use actix_web::{
     delete, post, put,
@@ -11,31 +12,38 @@ use actix_web::{
 use uuid::Uuid;
 
 // FIXME: this is not needed replace when known how to check all optional fields are some
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize, Validate)]
 /// To receive data from HTTP request thus Uuid not required
 pub struct UserData {
     /// Name to be displayed, mostly real name
     pub display_name: String,
     /// Username
+    #[validate(length(min = 3))]
     pub username: String,
     /// password string
+    #[validate(length(min = 6))]
     pub password: String,
     /// email id of user
+    #[validate(email)]
     pub email: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize, Validate)]
 /// To receive data from HTTP request thus Uuid not required
 pub struct UpdateUserData {
     /// Name to be displayed, mostly real name
     pub display_name: Option<String>,
     /// Username
+    #[validate(length(min = 3))]
     pub username: Option<String>,
-    /// bcrypt hash of the password
+    /// password
+    #[validate(length(min = 6))]
     pub password: Option<String>,
     /// email id of user
+    #[validate(email)]
     pub email: Option<String>,
 }
+
 #[derive(Deserialize)]
 struct UserLoginData {
     username: String,
@@ -46,6 +54,23 @@ struct UserLoginData {
 async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
+
+    if let Err(errors) = user.validate() {
+        let error_map = errors.field_errors();
+
+        let message = if error_map.contains_key("username") {
+            format!("Invalid username. \"{}\" is too short.", user.username)
+        } else if error_map.contains_key("email") {
+            format!("Invalid email address \"{}\"", user.email)
+        } else if error_map.contains_key("password") {
+            "Invalid password. Too short".to_string()
+        } else {
+            "Invalid input.".to_string()
+        };
+
+        return HttpResponse::BadRequest().json(message);
+    }
+
     let password_hash = hash(user.password).0;
     match db
         .send(CreateUser {
@@ -96,8 +121,25 @@ async fn update_user(
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
 
-    // TODO: Use a more elegant solution
-    // let password_hash =
+    if let Err(errors) = user.validate() {
+        let error_map = errors.field_errors();
+
+        let message = if error_map.contains_key("username") {
+            format!(
+                "Invalid username. \"{}\" is too short.",
+                user.username.unwrap()
+            )
+        } else if error_map.contains_key("email") {
+            format!("Invalid email address \"{}\"", user.email.unwrap())
+        } else if error_map.contains_key("password") {
+            "Invalid password. Too short".to_string()
+        } else {
+            "Invalid input.".to_string()
+        };
+
+        return HttpResponse::BadRequest().json(message);
+    }
+
     match db
         .send(UpdateUser {
             id,

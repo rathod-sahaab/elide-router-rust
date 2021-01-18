@@ -28,7 +28,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Clone, Insertable, Serialize, Deserialize)]
+#[derive(Debug, Clone, Insertable, Deserialize)]
 #[table_name = "users"]
 /// To insert data in DB
 pub struct NewUser {
