@@ -59,9 +59,9 @@ async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Respon
         let error_map = errors.field_errors();
 
         let message = if error_map.contains_key("username") {
-            format!("Invalid username. \"{}\" is too short.", user.username)
+            format!("Invalid username. '{}' is too short.", user.username)
         } else if error_map.contains_key("email") {
-            format!("Invalid email address \"{}\"", user.email)
+            format!("Invalid email address '{}'", user.email)
         } else if error_map.contains_key("password") {
             "Invalid password. Too short".to_string()
         } else {
