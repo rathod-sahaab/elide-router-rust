@@ -1,4 +1,4 @@
-use crate::actors::db::users::{CreateUser, DeleteUser, GetUserByUsername, UpdateUser};
+use crate::actors::db::users::{CreateUser, DeleteUser, GetUser, GetUserByUsername, UpdateUser};
 use crate::models::AppState;
 use crate::utils::crypto::{hash, verify};
 use actix_session::Session;
@@ -6,8 +6,8 @@ use serde::Deserialize;
 use validator::Validate;
 
 use actix_web::{
-    delete, post, put,
-    web::{Data, Json, Path},
+    delete, get, post, put,
+    web::{Data, Json},
     HttpResponse, Responder,
 };
 use uuid::Uuid;
@@ -51,8 +51,8 @@ struct UserLoginData {
     password: String,
 }
 
-#[post("/create")]
-async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Responder {
+#[post("/register")]
+async fn register_user(user: Json<UserData>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
 
@@ -88,6 +88,32 @@ async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Respon
     }
 }
 
+#[get("/me")]
+async fn me_user(session: Session, state: Data<AppState>) -> impl Responder {
+    let db = state.as_ref().db.clone();
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id = user_id.unwrap();
+
+    match db.send(GetUser { id: user_id }).await {
+        Ok(Ok(user)) => HttpResponse::Ok().json(user),
+        Ok(Err(_)) => HttpResponse::NotFound().json("User not found"),
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
+    }
+}
+
+// fn user_id_from_session(session: Session) -> Result<Uuid, actix_web::HttpResponse> {
+//     let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+
+//     if user_id.is_none() {
+//         return Err(HttpResponse::Unauthorized().json("Unauthorized"));
+//     }
+//     Ok(user_id.unwrap())
+// }
+
 #[post("/login")]
 async fn login_user(
     login_data: Json<UserLoginData>,
@@ -117,7 +143,6 @@ async fn login_user(
     }
 }
 
-// TODO: Obtain id from JWT
 #[put("/update")]
 async fn update_user(
     user: Json<UpdateUserData>,
@@ -171,12 +196,17 @@ async fn update_user(
     }
 }
 
-// TODO: Obtain id from JWT
-#[delete("/{id}")]
-async fn delete_user(Path(id): Path<Uuid>, state: Data<AppState>) -> impl Responder {
+#[delete("/delete")]
+async fn delete_user(session: Session, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
 
-    match db.send(DeleteUser { id }).await {
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id = user_id.unwrap();
+
+    match db.send(DeleteUser { id: user_id }).await {
         Ok(Ok(user)) => HttpResponse::Ok().json(user),
         Ok(Err(_)) => HttpResponse::NotFound().json("User not found"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),

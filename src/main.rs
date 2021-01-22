@@ -26,7 +26,7 @@ use utils::db::{get_pool, run_migrations};
 use handlers::{
     redirects::redirect_by_slug,
     routes::{create_route, delete_route, update_route},
-    users::{create_user, delete_user, login_user, update_user},
+    users::{delete_user, login_user, me_user, register_user, update_user},
 };
 
 #[actix_web::main]
@@ -57,7 +57,8 @@ async fn main() -> std::io::Result<()> {
                     )
                     .service(
                         scope("/users/")
-                            .service(create_user)
+                            .service(register_user)
+                            .service(me_user)
                             .service(login_user)
                             .service(update_user)
                             .service(delete_user),
