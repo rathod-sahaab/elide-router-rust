@@ -4,9 +4,9 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-extern crate validator;
 extern crate chrono;
 extern crate sodiumoxide;
+extern crate validator;
 
 mod actors;
 mod handlers;
@@ -14,9 +14,10 @@ mod models;
 mod schema;
 mod utils;
 
-use actix_web::{web::scope, App, HttpServer};
+use actix_web::{cookie, web::scope, App, HttpServer};
 
 use actix::SyncArbiter;
+use actix_redis::RedisSession;
 use actors::db::DbActor;
 use models::AppState;
 use std::env;
@@ -37,6 +38,15 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            // cookie session middleware
+            .wrap(
+                // FIXME: use env var
+                RedisSession::new("redis:6379", &[0; 32])
+                    // don't allow the cookie to be accessed from javascript
+                    .cookie_http_only(true)
+                    // allow the cookie only from the current domain
+                    .cookie_same_site(cookie::SameSite::Lax),
+            )
             .service(
                 scope("/api/")
                     .service(

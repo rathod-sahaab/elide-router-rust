@@ -1,6 +1,7 @@
 use crate::actors::db::users::{CreateUser, DeleteUser, GetUserByUsername, UpdateUser};
 use crate::models::AppState;
 use crate::utils::crypto::{hash, verify};
+use actix_session::Session;
 use serde::Deserialize;
 use validator::Validate;
 
@@ -88,7 +89,11 @@ async fn create_user(user: Json<UserData>, state: Data<AppState>) -> impl Respon
 }
 
 #[post("/login")]
-async fn login_user(login_data: Json<UserLoginData>, state: Data<AppState>) -> impl Responder {
+async fn login_user(
+    login_data: Json<UserLoginData>,
+    session: Session,
+    state: Data<AppState>,
+) -> impl Responder {
     let db = state.as_ref().db.clone();
     let login_data = login_data.into_inner();
     match db
@@ -99,6 +104,7 @@ async fn login_user(login_data: Json<UserLoginData>, state: Data<AppState>) -> i
     {
         Ok(Ok(user)) => {
             if verify(&user.password_hash, login_data.password) {
+                session.set("user_id", user.id).unwrap();
                 HttpResponse::Ok().json(user)
             } else {
                 // prevent brute forcing usernames
@@ -112,14 +118,20 @@ async fn login_user(login_data: Json<UserLoginData>, state: Data<AppState>) -> i
 }
 
 // TODO: Obtain id from JWT
-#[put("/{id}")]
+#[put("/update")]
 async fn update_user(
-    Path(id): Path<Uuid>,
     user: Json<UpdateUserData>,
+    session: Session,
     state: Data<AppState>,
 ) -> impl Responder {
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id = user_id.unwrap();
 
     if let Err(errors) = user.validate() {
         let error_map = errors.field_errors();
@@ -142,7 +154,7 @@ async fn update_user(
 
     match db
         .send(UpdateUser {
-            id,
+            id: user_id,
             email: user.email,
             display_name: user.display_name,
             username: user.username,

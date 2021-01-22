@@ -29,3 +29,4 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER refresh_route_updated_at BEFORE UPDATE ON routes FOR EACH ROW EXECUTE PROCEDURE  refresh_updated_at();
+

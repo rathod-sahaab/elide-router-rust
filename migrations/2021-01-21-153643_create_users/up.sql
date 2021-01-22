@@ -26,3 +26,4 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER refresh_user_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE  refresh_updated_at();
+

@@ -14,7 +14,7 @@ services:
     environment:
       - DATABASE_URL=postgres://elide:elide@postgres:5432/elide
     networks:
-      - elide
+      - elide_test
     volumes: 
       - ./:/app
     tty: true
@@ -30,12 +30,19 @@ services:
       POSTGRES_PASSWORD: "elide"
       PGPASSWORD: "elide"
     networks:
-      - elide
+      - elide_test
     ports:
       - "5432:5432"
 
+  redis:
+    image: redis:alpine
+    networks:
+      - elide_test
+    ports:
+      - "6379:6379"
+
 networks:
-  elide:
+  elide_test:
     driver: bridge
 
 volumes:
