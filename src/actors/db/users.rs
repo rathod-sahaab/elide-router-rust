@@ -11,7 +11,7 @@ use uuid::Uuid;
 #[derive(Message)]
 #[rtype(result = "QueryResult<User>")]
 pub struct CreateUser {
-    pub display_name: String,
+    pub name: String,
     pub email: String,
     pub password_hash: String,
     pub username: String,
@@ -44,7 +44,7 @@ pub struct CheckUserNameExists {
 #[table_name = "users"]
 pub struct UpdateUser {
     pub id: Uuid,
-    pub display_name: Option<String>,
+    pub name: Option<String>,
     pub email: Option<String>,
     pub password_hash: Option<String>,
     pub username: Option<String>,
@@ -64,7 +64,7 @@ impl Handler<CreateUser> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
         let new_user = NewUser {
             email: msg.email,
-            display_name: msg.display_name,
+            name: msg.name,
             username: msg.username,
             password_hash: msg.password_hash,
         };

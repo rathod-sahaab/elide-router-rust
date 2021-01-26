@@ -17,7 +17,7 @@ use uuid::Uuid;
 /// To receive data from HTTP request thus Uuid not required
 pub struct UserData {
     /// Name to be displayed, mostly real name
-    pub display_name: String,
+    pub name: String,
     /// Username
     #[validate(length(min = 3))]
     pub username: String,
@@ -33,7 +33,7 @@ pub struct UserData {
 /// To receive data from HTTP request thus Uuid not required
 pub struct UpdateUserData {
     /// Name to be displayed, mostly real name
-    pub display_name: Option<String>,
+    pub name: Option<String>,
     /// Username
     #[validate(length(min = 3))]
     pub username: Option<String>,
@@ -76,7 +76,7 @@ async fn register_user(user: Json<UserData>, state: Data<AppState>) -> impl Resp
     match db
         .send(CreateUser {
             email: user.email,
-            display_name: user.display_name,
+            name: user.name,
             username: user.username,
             // remove null character to store in postgres
             password_hash: password_hash.trim_matches(char::from(0)).to_string(),
@@ -181,7 +181,7 @@ async fn update_user(
         .send(UpdateUser {
             id: user_id,
             email: user.email,
-            display_name: user.display_name,
+            name: user.name,
             username: user.username,
             password_hash: user
                 .password

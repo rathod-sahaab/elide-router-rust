@@ -11,7 +11,7 @@ pub struct User {
     /// Unique identifier, used by link admin
     pub id: Uuid,
     /// Name to be displayed, mostly real name
-    pub display_name: String,
+    pub name: String,
     pub username: String,
     /// argon hash of the password
     #[serde(skip_serializing)]
@@ -33,7 +33,7 @@ pub struct User {
 /// To insert data in DB
 pub struct NewUser {
     /// Name to be displayed, mostly real name
-    pub display_name: String,
+    pub name: String,
     /// Username
     pub username: String,
     /// bcrypt hash of the password

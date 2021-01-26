@@ -15,7 +15,7 @@ table! {
 table! {
     users (id) {
         id -> Uuid,
-        display_name -> Varchar,
+        name -> Varchar,
         username -> Varchar,
         password_hash -> Varchar,
         email -> Varchar,
