@@ -2,8 +2,8 @@ table! {
     routes (id) {
         id -> Uuid,
         slug -> Varchar,
-        target -> Varchar,
         creator_id -> Nullable<Uuid>,
+        target -> Varchar,
         active -> Bool,
         active_from -> Nullable<Timestamp>,
         active_till -> Nullable<Timestamp>,

@@ -13,7 +13,7 @@ CREATE TABLE users (
 );
 
 -- To automatically refresh updated_at
-CREATE OR REPLACE FUNCTION refresh_updated_at()
+CREATE OR REPLACE FUNCTION refresh_u_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
    IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
@@ -25,5 +25,5 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER refresh_user_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE  refresh_updated_at();
+CREATE TRIGGER refresh_user_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE refresh_u_updated_at();
 
