@@ -26,7 +26,7 @@ use utils::db::{get_pool, run_migrations};
 use handlers::{
     redirects::redirect_by_slug,
     routes::{create_route, delete_route, update_route},
-    users::{delete_user, login_user, me_user, register_user, update_user},
+    users::{delete_user, login_user, logout_user, me_user, register_user, update_user},
 };
 
 #[actix_web::main]
@@ -44,7 +44,6 @@ async fn main() -> std::io::Result<()> {
                 RedisSession::new("redis:6379", &[0; 32])
                     // don't allow the cookie to be accessed from javascript
                     .cookie_http_only(true)
-                    // allow the cookie only from the current domain
                     .cookie_same_site(cookie::SameSite::Lax),
             )
             .service(
@@ -60,6 +59,7 @@ async fn main() -> std::io::Result<()> {
                             .service(register_user)
                             .service(me_user)
                             .service(login_user)
+                            .service(logout_user)
                             .service(update_user)
                             .service(delete_user),
                     ),

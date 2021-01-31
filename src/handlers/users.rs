@@ -143,6 +143,12 @@ async fn login_user(
     }
 }
 
+#[get("/logout")]
+async fn logout_user(session: Session) -> impl Responder {
+    session.purge();
+    HttpResponse::Ok().json(true)
+}
+
 #[put("/update")]
 async fn update_user(
     user: Json<UpdateUserData>,

@@ -9,6 +9,7 @@ use chrono::NaiveDateTime;
 /// To get data from DB
 pub struct User {
     /// Unique identifier, used by link admin
+    #[serde(skip_serializing)]
     pub id: Uuid,
     /// Name to be displayed, mostly real name
     pub name: String,
