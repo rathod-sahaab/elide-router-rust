@@ -1,6 +1,7 @@
 use crate::actix::{Handler, Message};
 use crate::diesel::prelude::*;
 use crate::models::routes::{NewRoute, Route};
+use crate::schema::routes;
 use crate::schema::routes::dsl::*;
 use uuid::Uuid;
 
@@ -10,6 +11,7 @@ use crate::actors::db::DbActor;
 #[rtype(result = "QueryResult<Route>")]
 pub struct CreateRoute {
     pub slug: String,
+    pub creator_id: Option<Uuid>,
     pub target: String,
     pub active: Option<bool>,
 }
@@ -20,10 +22,11 @@ pub struct ReadRouteBySlug {
     pub slug: String,
 }
 
-#[derive(Message)]
+#[derive(Message, AsChangeset)]
 #[rtype(result = "QueryResult<Route>")]
+#[table_name = "routes"]
 pub struct UpdateRoute {
-    pub uuid: Uuid,
+    pub id: Uuid,
     pub slug: String,
     pub target: String,
     pub active: Option<bool>,
@@ -60,6 +63,7 @@ impl Handler<CreateRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
         let new_route = NewRoute {
             slug: msg.slug,
+            creator_id: msg.creator_id,
             target: msg.target,
             active: msg.active,
         };
@@ -86,7 +90,7 @@ impl Handler<UpdateRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::update(routes)
-            .filter(id.eq(msg.uuid))
+            .filter(id.eq(msg.id))
             .set((
                 slug.eq(msg.slug),
                 target.eq(msg.target),

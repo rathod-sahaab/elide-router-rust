@@ -12,9 +12,11 @@ pub struct Route {
     pub id: Uuid,
     /// slug part of elide URL, elide.com/this-is-slug
     pub slug: String,
+    /// Id of user who created this route
+    #[serde(skip_serializing)]
+    pub creator_id: Option<Uuid>,
     /// Target where requestee should be redirected
     pub target: String,
-    pub creator_id: Option<Uuid>,
     /// Is the link active
     pub active: bool,
     // Time from which the link will be active
@@ -33,6 +35,8 @@ pub struct Route {
 pub struct NewRoute {
     /// slug part of elide URL, elide.com/this-is-slug
     pub slug: String,
+    /// Id of user who created this route
+    pub creator_id: Option<Uuid>,
     /// Target where requestee should be redirected
     pub target: String,
     /// Is the link active
