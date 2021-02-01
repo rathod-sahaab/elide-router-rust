@@ -25,7 +25,7 @@ use utils::db::{get_pool, run_migrations};
 
 use handlers::{
     redirects::redirect_by_slug,
-    routes::{create_route, delete_route, update_route},
+    routes::{create_route, delete_route, get_user_routes, update_route},
     users::{delete_user, login_user, logout_user, me_user, register_user, update_user},
 };
 
@@ -51,6 +51,7 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         scope("/routes/")
                             .service(create_route)
+                            .service(get_user_routes)
                             .service(update_route)
                             .service(delete_route),
                     )

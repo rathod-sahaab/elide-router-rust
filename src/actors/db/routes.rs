@@ -45,6 +45,11 @@ pub struct DeleteRoute {
 pub struct GetRoute {
     pub id: Uuid,
 }
+#[derive(Message)]
+#[rtype(result = "QueryResult<Vec<Route>>")]
+pub struct GetMyRoutes {
+    pub creator_id: Uuid,
+}
 
 // TODO: Increment visit and increment unique visit
 
@@ -91,6 +96,15 @@ impl Handler<GetRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         routes.filter(id.eq(msg.id)).get_result::<Route>(&conn)
+    }
+}
+
+impl Handler<GetMyRoutes> for DbActor {
+    type Result = QueryResult<Vec<Route>>;
+    fn handle(&mut self, msg: GetMyRoutes, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        routes.filter(creator_id.eq(msg.creator_id)).load(&conn)
     }
 }
 

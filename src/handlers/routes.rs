@@ -1,4 +1,4 @@
-use crate::actors::db::routes::{CreateRoute, DeleteRoute, UpdateRoute};
+use crate::actors::db::routes::{CreateRoute, DeleteRoute, GetMyRoutes, UpdateRoute};
 use crate::models::routes::RouteData;
 use crate::models::AppState;
 use actix_session::Session;
@@ -6,7 +6,7 @@ use diesel::result::Error::DatabaseError;
 use serde::Deserialize;
 
 use actix_web::{
-    delete, post, put,
+    delete, get, post, put,
     web::{Data, Json},
     HttpResponse, Responder,
 };
@@ -73,6 +73,27 @@ async fn create_orphan_route(
         .await
     {
         Ok(Ok(route)) => HttpResponse::Ok().json(route),
+        _ => HttpResponse::InternalServerError().json("Something went wrong"),
+    }
+}
+#[get("/my")]
+async fn get_user_routes(session: Session, state: Data<AppState>) -> impl Responder {
+    let db = state.as_ref().db.clone();
+
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id: Uuid = user_id.unwrap();
+
+    match db
+        .send(GetMyRoutes {
+            creator_id: user_id,
+        })
+        .await
+    {
+        Ok(Ok(routes)) => HttpResponse::Ok().json(routes),
+        Ok(Err(_)) => HttpResponse::NotFound().json("Route not found, or unauthorized access"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
