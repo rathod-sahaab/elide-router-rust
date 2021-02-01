@@ -36,7 +36,8 @@ pub struct UpdateRoute {
 #[derive(Message)]
 #[rtype(result = "QueryResult<Route>")]
 pub struct DeleteRoute {
-    pub uuid: Uuid,
+    pub id: Uuid,
+    pub creator_id: Uuid,
 }
 
 #[derive(Message)]
@@ -118,7 +119,8 @@ impl Handler<DeleteRoute> for DbActor {
         let conn = self.0.get().expect("Unable to get a connection");
 
         diesel::delete(routes)
-            .filter(id.eq(msg.uuid))
+            .filter(id.eq(msg.id))
+            .filter(creator_id.eq(msg.creator_id))
             .get_result::<Route>(&conn)
     }
 }

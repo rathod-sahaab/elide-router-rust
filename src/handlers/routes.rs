@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use actix_web::{
     delete, post, put,
-    web::{Data, Json, Path},
+    web::{Data, Json},
     HttpResponse, Responder,
 };
 use uuid::Uuid;
@@ -40,7 +40,7 @@ async fn create_route(
         Ok(Err(error)) => match error {
             DatabaseError(_, _) => {
                 HttpResponse::BadRequest().json("Route with this slug already exists")
-            },
+            }
             _ => HttpResponse::BadRequest().json("Request was bad"),
         },
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
@@ -120,11 +120,31 @@ async fn update_route(
     }
 }
 
-#[delete("/{uuid}")]
-async fn delete_route(Path(uuid): Path<Uuid>, state: Data<AppState>) -> impl Responder {
-    let db = state.as_ref().db.clone();
+#[derive(Deserialize)]
+pub struct RouteID {
+    id: Uuid,
+}
 
-    match db.send(DeleteRoute { uuid }).await {
+#[delete("/delete")]
+async fn delete_route(
+    route: Json<RouteID>,
+    session: Session,
+    state: Data<AppState>,
+) -> impl Responder {
+    let db = state.as_ref().db.clone();
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id: Uuid = user_id.unwrap();
+
+    match db
+        .send(DeleteRoute {
+            id: route.id,
+            creator_id: user_id,
+        })
+        .await
+    {
         Ok(Ok(route)) => HttpResponse::Ok().json(route),
         Ok(Err(_)) => HttpResponse::NotFound().json("Route not found"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
