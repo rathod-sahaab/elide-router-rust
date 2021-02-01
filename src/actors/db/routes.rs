@@ -28,6 +28,7 @@ pub struct ReadRouteBySlug {
 pub struct UpdateRoute {
     pub id: Uuid,
     pub slug: String,
+    pub creator_id: Uuid,
     pub target: String,
     pub active: Option<bool>,
 }
@@ -41,7 +42,7 @@ pub struct DeleteRoute {
 #[derive(Message)]
 #[rtype(result = "QueryResult<Route>")]
 pub struct GetRoute {
-    pub uuid: Uuid,
+    pub id: Uuid,
 }
 
 // TODO: Increment visit and increment unique visit
@@ -83,6 +84,15 @@ impl Handler<ReadRouteBySlug> for DbActor {
     }
 }
 
+impl Handler<GetRoute> for DbActor {
+    type Result = QueryResult<Route>;
+    fn handle(&mut self, msg: GetRoute, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        routes.filter(id.eq(msg.id)).get_result::<Route>(&conn)
+    }
+}
+
 impl Handler<UpdateRoute> for DbActor {
     type Result = QueryResult<Route>;
 
@@ -91,6 +101,7 @@ impl Handler<UpdateRoute> for DbActor {
 
         diesel::update(routes)
             .filter(id.eq(msg.id))
+            .filter(creator_id.eq(msg.creator_id))
             .set((
                 slug.eq(msg.slug),
                 target.eq(msg.target),

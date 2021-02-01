@@ -2,6 +2,8 @@ use crate::actors::db::routes::{CreateRoute, DeleteRoute, UpdateRoute};
 use crate::models::routes::RouteData;
 use crate::models::AppState;
 use actix_session::Session;
+use diesel::result::Error::DatabaseError;
+use serde::Deserialize;
 
 use actix_web::{
     delete, post, put,
@@ -35,6 +37,12 @@ async fn create_route(
         .await
     {
         Ok(Ok(route)) => HttpResponse::Ok().json(route),
+        Ok(Err(error)) => match error {
+            DatabaseError(_, _) => {
+                HttpResponse::BadRequest().json("Route with this slug already exists")
+            },
+            _ => HttpResponse::BadRequest().json("Request was bad"),
+        },
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
@@ -69,19 +77,37 @@ async fn create_orphan_route(
     }
 }
 
-#[put("/{uuid}")]
+#[derive(Deserialize)]
+pub struct UpdateRouteData {
+    /// ID of route to be updated
+    id: Uuid,
+    /// slug part of elide URL, elide.com/this-is-slug
+    pub slug: String,
+    /// Target where requestee should be redirected
+    pub target: String,
+    /// Is the link active
+    pub active: Option<bool>,
+}
+
+#[put("/update")]
 async fn update_route(
-    Path(uuid): Path<Uuid>,
-    route: Json<RouteData>,
+    session: Session,
+    route: Json<UpdateRouteData>,
     state: Data<AppState>,
 ) -> impl Responder {
     let db = state.as_ref().db.clone();
     let route = route.into_inner();
-    // FIXME: Check if user owns the route
+
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    let user_id: Uuid = user_id.unwrap();
 
     match db
         .send(UpdateRoute {
-            id: uuid,
+            id: route.id,
+            creator_id: user_id,
             slug: route.slug,
             target: route.target,
             active: route.active,
@@ -89,7 +115,7 @@ async fn update_route(
         .await
     {
         Ok(Ok(route)) => HttpResponse::Ok().json(route),
-        Ok(Err(_)) => HttpResponse::NotFound().json("Route not found"),
+        Ok(Err(_)) => HttpResponse::NotFound().json("Route not found, or unauthorized access"),
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
