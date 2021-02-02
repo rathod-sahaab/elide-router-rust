@@ -30,7 +30,7 @@ pub struct UpdateRoute {
     pub slug: String,
     pub creator_id: Uuid,
     pub target: String,
-    pub active: Option<bool>,
+    pub active: bool,
 }
 
 #[derive(Message)]
@@ -117,11 +117,7 @@ impl Handler<UpdateRoute> for DbActor {
         diesel::update(routes)
             .filter(id.eq(msg.id))
             .filter(creator_id.eq(msg.creator_id))
-            .set((
-                slug.eq(msg.slug),
-                target.eq(msg.target),
-                active.eq(msg.active.unwrap_or(true)),
-            ))
+            .set(msg)
             .get_result::<Route>(&conn)
     }
 }

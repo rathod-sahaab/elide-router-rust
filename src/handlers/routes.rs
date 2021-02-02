@@ -98,7 +98,7 @@ async fn get_user_routes(session: Session, state: Data<AppState>) -> impl Respon
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct UpdateRouteData {
     /// ID of route to be updated
     id: Uuid,
@@ -107,7 +107,7 @@ pub struct UpdateRouteData {
     /// Target where requestee should be redirected
     pub target: String,
     /// Is the link active
-    pub active: Option<bool>,
+    pub active: bool,
 }
 
 #[put("/update")]
