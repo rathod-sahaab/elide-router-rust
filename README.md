@@ -1,4 +1,4 @@
-![Elide logo](./docs/images/elide-logo.png | width=72)
+<img src="./docs/images/elide-logo.png" alt="Elide logo" width="72"/>
 # elide-router
 ReST API backend written in rust for [elide.me](https://console.elide.me), provides:
 
