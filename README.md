@@ -1,39 +1,49 @@
-<h1 align="center">Welcome to actix-web-posts-api 👋</h1>
-<p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1-blue.svg?cacheSeconds=2592000" />
-  <a href="#" target="_blank">
-    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
-  </a>
-</p>
+![](./docs/images/elide-logo.png =96x)
+# elide-router
+ReST API backend written in rust for [elide.me](https://console.elide.me), provides:
 
-> REST Api built with Actix web and diesel 
+- Authentication and User management
+  - Login
+  - Register
+  - Delete
+  - Editing user info
+- Routes management
+  - Creating Routes
+  - Editing Routes
+  - Deleting Routes
+- Routing
+  - Redirects to the target domain based on a route
 
-## Install
+## Develop
+
+### Requirements
+
+- `make`
+- `docker`
+- `docker-compose`
+
+### Instructions
+
+To develop with auto compiliation on changes, run
 
 ```sh
-docker-compose build
+make watch
 ```
 
-## Usage
+When in container, run
 
-```sh
-docker-compose run
+```
+cargo watch -x run
 ```
 
-## Resources
+This will run the server at `localhost:9600` and then you can either use `elide-app` or Postman to test the server.
 
-+ [Actors Model slides](https://slides.com/jasterv/actors-model/fullscreen)
+## Stop
 
-## Author
+If your are in docker container, To stop the server exit the containers terminal by typing `exit` or <kbd>ctrl</kbd> + <kbd>d</kbd>
 
-👤 **Victor Martinez**
+When in your normal terminal Stop the server by running
 
-* Website: https://www.linkedin.com/in/victor-martinez-3b8304196/
-* Github: [@JasterV](https://github.com/JasterV)
-
-## Show your support
-
-Give a ⭐️ if this project helped you!
-
-***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+```
+make stop
+```

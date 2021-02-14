@@ -128,7 +128,7 @@ async fn update_route(
     match db
         .send(UpdateRoute {
             id: route.id,
-            creator_id: user_id,
+            creator_id: user_id, // not updated but used to filter
             slug: route.slug,
             target: route.target,
             active: route.active,
