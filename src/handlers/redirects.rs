@@ -23,3 +23,12 @@ async fn redirect_by_slug(Path(p_slug): Path<String>, state: Data<AppState>) -> 
         _ => HttpResponse::InternalServerError().json("Something went wrong"),
     }
 }
+
+/// When user requests 'elide.me' they are looking for info i.e. frontend
+#[get("/")]
+async fn redirect_to_console() -> impl Responder {
+    // get link from config
+    HttpResponse::PermanentRedirect()
+        .header("Location", "https://console.elide.me")
+        .finish()
+}

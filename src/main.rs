@@ -24,7 +24,7 @@ use std::env;
 use utils::db::{get_pool, run_migrations};
 
 use handlers::{
-    redirects::redirect_by_slug,
+    redirects::{redirect_by_slug, redirect_to_console},
     routes::{create_route, delete_route, get_user_routes, update_route},
     users::{delete_user, login_user, logout_user, me_user, register_user, update_user},
 };
@@ -66,6 +66,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(redirect_by_slug)
+            .service(redirect_to_console)
             .data(AppState {
                 db: db_addr.clone(),
             })
