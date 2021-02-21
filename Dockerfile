@@ -1,4 +1,4 @@
-FROM rust:latest as build
+FROM rust:1.48 as build
 
 COPY . .
 
@@ -6,7 +6,7 @@ RUN mkdir -p /app
 
 RUN cargo build --release
 
-RUN cp /target/release/elide /app
+RUN cp target/release/elide-router /app
 
 FROM ubuntu:latest
 
@@ -15,6 +15,6 @@ RUN apt-get -y update && \
      apt-get -y upgrade  && \
      apt -y install ca-certificates libssl-dev libpq-dev
 
-COPY --from=build /app/elide /usr/local/bin
+COPY --from=build /app/elide-router /usr/local/bin
 
-ENTRYPOINT ["elide"]
+ENTRYPOINT ["elide-router"]

@@ -12,7 +12,8 @@ services:
     depends_on:
       - "postgres"
     environment:
-      - PG_URL=postgres://elide:elide@postgres:5432/elide
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/elide
+      # - DATABASE_URL=postgres://elide:elide@postgres:5432/elide
     networks:
       - elide
     tty: true
@@ -22,20 +23,28 @@ services:
   postgres:
     image: postgres:alpine
     volumes:
-      - pg_actix:/var/lib/postgresql/data
+      - elidedb:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: "elide"
-      POSTGRES_PASSWORD: "elide"
-      PGPASSWORD: "elide"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      PGPASSWORD: "${PGPASSWORD}"
     networks:
       - elide
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    networks:
+      - elide
+    ports:
+      - "6379:6379"
 
 networks:
   elide:
     driver: bridge
 
 volumes:
-  pg_actix:
+  elidedb:
     driver: local
+

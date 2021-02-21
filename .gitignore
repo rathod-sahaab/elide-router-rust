@@ -1,1 +1,5 @@
 /target
+/rls
+
+# don't commit .env.prod which contains production secrets
+.env.prod
