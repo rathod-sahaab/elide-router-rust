@@ -23,7 +23,7 @@ services:
   postgres:
     image: postgres:alpine
     volumes:
-      - pg_actix:/var/lib/postgresql/data
+      - elidedb:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -45,6 +45,6 @@ networks:
     driver: bridge
 
 volumes:
-  pg_actix:
+  elidedb:
     driver: local
 
