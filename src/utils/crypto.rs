@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use sodiumoxide::crypto::pwhash::argon2id13;
 
 pub fn hash(passwd: String) -> (String, argon2id13::HashedPassword) {
@@ -22,4 +23,11 @@ pub fn verify(hash: &str, passwd: String) -> bool {
         Some(hp) => argon2id13::pwhash_verify(&hp, passwd.as_bytes()),
         _ => false,
     }
+}
+
+// generates a random [u8; 32];
+pub fn random_redis_key() -> [u8; 32] {
+    let mut key: [u8; 32] = [0u8; 32];
+    rand::thread_rng().fill_bytes(&mut key);
+    key
 }

@@ -21,7 +21,10 @@ use actix_redis::RedisSession;
 use actors::db::DbActor;
 use models::AppState;
 use std::env;
-use utils::db::{get_pool, run_migrations};
+use utils::{
+    crypto::random_redis_key,
+    db::{get_pool, run_migrations},
+};
 
 use handlers::{
     redirects::{redirect_by_slug, redirect_to_console},
@@ -35,13 +38,13 @@ async fn main() -> std::io::Result<()> {
     run_migrations(&db_url);
     let pool = get_pool(&db_url);
     let db_addr = SyncArbiter::start(5, move || DbActor(pool.clone()));
+    let redis_key = random_redis_key(); // fetch redis key here so all threads have same key
 
     HttpServer::new(move || {
         App::new()
             // cookie session middleware
             .wrap(
-                // FIXME: use env var
-                RedisSession::new("redis:6379", &[0; 32])
+                RedisSession::new("redis:6379", &redis_key)
                     // don't allow the cookie to be accessed from javascript
                     .cookie_http_only(true)
                     .cookie_same_site(cookie::SameSite::Lax),
