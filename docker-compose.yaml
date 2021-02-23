@@ -2,18 +2,13 @@ version: "3.4"
 services:
   elide:
     container_name: "elide"
-    build:
-      context: .
-      dockerfile: "Dockerfile"
-      cache_from:
-        - rust:latest
+    image: rathodsahaab/elide:latest
     links:
       - "postgres"
     depends_on:
       - "postgres"
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/elide
-      # - DATABASE_URL=postgres://elide:elide@postgres:5432/elide
     networks:
       - elide
     tty: true
