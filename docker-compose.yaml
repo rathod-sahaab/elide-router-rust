@@ -2,7 +2,7 @@ version: "3.4"
 services:
   elide:
     container_name: "elide"
-    image: rathodsahaab/elide:latest
+    image: rathodsahaab/elide_server:latest
     links:
       - "postgres"
     depends_on:
