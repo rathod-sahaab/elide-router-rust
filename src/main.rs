@@ -14,13 +14,15 @@ mod models;
 mod schema;
 mod utils;
 
-use actix_web::{cookie, web::scope, App, HttpServer};
+use actix_web::{cookie, http, web::scope, App, HttpServer};
 
 use actix::SyncArbiter;
+use actix_cors::Cors;
 use actix_redis::RedisSession;
+use std::env;
+
 use actors::db::DbActor;
 use models::AppState;
-use std::env;
 use utils::{
     crypto::random_redis_key,
     db::{get_pool, run_migrations},
@@ -41,9 +43,27 @@ async fn main() -> std::io::Result<()> {
     let redis_key = random_redis_key(); // fetch redis key here so all threads have same key
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin_fn(|origin, _req_head| {
+                // FIXME: only run in development
+                if cfg!(debug_assertions) {
+                    origin.as_bytes().starts_with(b"http://localhost")
+                } else {
+                    false
+                }
+            })
+            // TODO: pick from config
+            .allowed_origin("https://console.elide.me")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             // cookie session middleware
             .wrap(
+                // TODO: no magic, just config
                 RedisSession::new("redis:6379", &redis_key)
                     // don't allow the cookie to be accessed from javascript
                     .cookie_http_only(true)
