@@ -53,7 +53,10 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             // TODO: pick from config
-            .allowed_origin("https://console.elide.me")
+            .allowed_origin_fn(|origin, _req_head| {
+                // FIXME: only run in development
+                origin.as_bytes().ends_with(b".elide.me") // all sub domains
+            })
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
