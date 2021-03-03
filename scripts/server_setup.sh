@@ -1,7 +1,7 @@
 #! /bin/bash
 
 sudo apt update && sudo apt update -y
-sudo apt install docker docker-compose nginx
+sudo apt install docker docker-compose nginx make -y
 
 # firewall
 sudo ufw enable
@@ -12,4 +12,6 @@ sudo ufw allow https
 
 # create env vars file
 cp .env.dev .env.prod
+
+sudo apt-get install python3-certbot-nginx
 

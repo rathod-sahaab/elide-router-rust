@@ -2,7 +2,7 @@ use crate::actors::db::users::{CreateUser, DeleteUser, GetUser, GetUserByUsernam
 use crate::models::AppState;
 use crate::utils::crypto::{hash, verify};
 use actix_session::Session;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 use actix_web::{
@@ -13,7 +13,7 @@ use actix_web::{
 use uuid::Uuid;
 
 // FIXME: this is not needed replace when known how to check all optional fields are some
-#[derive(Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 /// To receive data from HTTP request thus Uuid not required
 pub struct UserData {
     /// Name to be displayed, mostly real name
@@ -45,7 +45,7 @@ pub struct UpdateUserData {
     pub email: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct UserLoginData {
     username: String,
     password: String,
@@ -55,6 +55,8 @@ struct UserLoginData {
 async fn register_user(user: Json<UserData>, state: Data<AppState>) -> impl Responder {
     let db = state.as_ref().db.clone();
     let user = user.into_inner();
+    info!("User is registering");
+    info!("{:?}", user);
 
     if let Err(errors) = user.validate() {
         let error_map = errors.field_errors();
@@ -120,6 +122,7 @@ async fn login_user(
     session: Session,
     state: Data<AppState>,
 ) -> impl Responder {
+    info!("{:?}", login_data);
     let db = state.as_ref().db.clone();
     let login_data = login_data.into_inner();
     match db
