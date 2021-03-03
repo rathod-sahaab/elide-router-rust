@@ -8,13 +8,18 @@ extern crate chrono;
 extern crate sodiumoxide;
 extern crate validator;
 
+#[macro_use]
+extern crate log;
+
 mod actors;
 mod handlers;
 mod models;
 mod schema;
 mod utils;
 
-use actix_web::{cookie, http, web::scope, App, HttpServer};
+use actix_web::{cookie, http, middleware::Logger, web::scope, App, HttpServer};
+
+// access logs are printed with the INFO level so ensure it is enabled by default
 
 use actix::SyncArbiter;
 use actix_cors::Cors;
@@ -41,11 +46,14 @@ async fn main() -> std::io::Result<()> {
     let pool = get_pool(&db_url);
     let db_addr = SyncArbiter::start(5, move || DbActor(pool.clone()));
     let redis_key = random_redis_key(); // fetch redis key here so all threads have same key
+    std::env::set_var("RUST_LOG", "info");
+    env_logger::init();
+
+    info!("starting up");
 
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req_head| {
-                // FIXME: only run in development
                 if cfg!(debug_assertions) {
                     origin.as_bytes().starts_with(b"http://localhost")
                 } else {
@@ -53,24 +61,23 @@ async fn main() -> std::io::Result<()> {
                 }
             })
             // TODO: pick from config
-            .allowed_origin_fn(|origin, _req_head| {
-                // FIXME: only run in development
-                origin.as_bytes().ends_with(b".elide.me") // all sub domains
-            })
-            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_origin("https://console.elide.me")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
+            .supports_credentials()
             .max_age(3600);
 
         App::new()
             .wrap(cors)
+            .wrap(Logger::default())
             // cookie session middleware
             .wrap(
                 // TODO: no magic, just config
                 RedisSession::new("redis:6379", &redis_key)
                     // don't allow the cookie to be accessed from javascript
                     .cookie_http_only(true)
-                    .cookie_same_site(cookie::SameSite::Lax),
+                    .cookie_same_site(cookie::SameSite::None),
             )
             .service(
                 scope("/api/")
