@@ -17,7 +17,7 @@ mod models;
 mod schema;
 mod utils;
 
-use actix_web::{cookie, http, middleware::Logger, web::scope, App, HttpServer};
+use actix_web::{cookie, middleware::Logger, web::scope, App, HttpServer};
 
 // access logs are printed with the INFO level so ensure it is enabled by default
 
@@ -52,21 +52,12 @@ async fn main() -> std::io::Result<()> {
     info!("starting up");
 
     HttpServer::new(move || {
-        let cors = Cors::default()
-            .allowed_origin_fn(|origin, _req_head| {
-                if cfg!(debug_assertions) {
-                    origin.as_bytes().starts_with(b"http://localhost")
-                } else {
-                    false
-                }
-            })
-            // TODO: pick from config
+        let cors = Cors::permissive()
             .allowed_origin("https://console.elide.me")
-            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-            .allowed_header(http::header::CONTENT_TYPE)
-            .supports_credentials()
-            .max_age(3600);
+            .allowed_origin("http://localhost:8000")
+            .allow_any_header()
+            .allow_any_method()
+            .supports_credentials();
 
         App::new()
             .wrap(cors)
@@ -77,7 +68,8 @@ async fn main() -> std::io::Result<()> {
                 RedisSession::new("redis:6379", &redis_key)
                     // don't allow the cookie to be accessed from javascript
                     .cookie_http_only(true)
-                    .cookie_same_site(cookie::SameSite::None),
+                    .cookie_same_site(cookie::SameSite::None)
+                    .cookie_secure(true),
             )
             .service(
                 scope("/api/")
