@@ -3,7 +3,7 @@ use crate::actors::db::DbActor;
 use crate::diesel::prelude::*;
 use crate::models::users::{NewUser, User};
 use crate::schema::users;
-use crate::schema::users::dsl::{id, username, users as users_q};
+use crate::schema::users::dsl::{email, id, username, users as users_q};
 
 use uuid::Uuid;
 
@@ -55,6 +55,18 @@ pub struct UpdateUser {
 #[rtype(result = "QueryResult<User>")]
 pub struct DeleteUser {
     pub id: Uuid,
+}
+
+#[derive(Message)]
+#[rtype(result = "bool")]
+pub struct UsernameAvailable {
+    pub username: String,
+}
+
+#[derive(Message)]
+#[rtype(result = "bool")]
+pub struct EmailAvailable {
+    pub email: String,
 }
 
 impl Handler<CreateUser> for DbActor {
@@ -129,5 +141,31 @@ impl Handler<DeleteUser> for DbActor {
         diesel::delete(users_q)
             .filter(id.eq(msg.id))
             .get_result::<User>(&conn)
+    }
+}
+
+impl Handler<UsernameAvailable> for DbActor {
+    type Result = bool;
+
+    fn handle(&mut self, msg: UsernameAvailable, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        users_q
+            .filter(username.eq(msg.username))
+            .get_result::<User>(&conn)
+            .is_err()
+    }
+}
+
+impl Handler<EmailAvailable> for DbActor {
+    type Result = bool;
+
+    fn handle(&mut self, msg: EmailAvailable, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        users_q
+            .filter(email.eq(msg.email))
+            .get_result::<User>(&conn)
+            .is_err()
     }
 }

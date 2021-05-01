@@ -146,6 +146,15 @@ async fn login_user(
     }
 }
 
+#[get("/loggedin")]
+async fn loggedin_check(session: Session) -> impl Responder {
+    let user_id: Option<Uuid> = session.get("user_id").unwrap_or(None);
+    if user_id.is_none() {
+        return HttpResponse::Unauthorized().json("Unauthorized");
+    }
+    HttpResponse::Ok().json(true)
+}
+
 #[get("/logout")]
 async fn logout_user(session: Session) -> impl Responder {
     session.purge();

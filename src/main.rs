@@ -17,7 +17,7 @@ mod models;
 mod schema;
 mod utils;
 
-use actix_web::{cookie, middleware::Logger, web::scope, App, HttpServer};
+use actix_web::{middleware::Logger, web::scope, App, HttpServer};
 
 // access logs are printed with the INFO level so ensure it is enabled by default
 
@@ -34,6 +34,7 @@ use utils::{
 };
 
 use handlers::{
+    availability::{email_availability, slug_availability, username_availability},
     redirects::{redirect_by_slug, redirect_to_console},
     routes::{create_route, delete_route, get_user_routes, update_route},
     users::{delete_user, login_user, logout_user, me_user, register_user, update_user},
@@ -44,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     let db_url = env::var("DATABASE_URL").expect("Error retrieving the database url");
     run_migrations(&db_url);
     let pool = get_pool(&db_url);
-    let db_addr = SyncArbiter::start(5, move || DbActor(pool.clone()));
+    let db_addr = SyncArbiter::start(1, move || DbActor(pool.clone()));
     let redis_key = random_redis_key(); // fetch redis key here so all threads have same key
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
@@ -81,6 +82,12 @@ async fn main() -> std::io::Result<()> {
                             .service(logout_user)
                             .service(update_user)
                             .service(delete_user),
+                    )
+                    .service(
+                        scope("/availability/")
+                            .service(username_availability)
+                            .service(email_availability)
+                            .service(slug_availability),
                     ),
             )
             .service(redirect_by_slug)

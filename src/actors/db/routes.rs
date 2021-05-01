@@ -51,6 +51,11 @@ pub struct GetMyRoutes {
     pub creator_id: Uuid,
 }
 
+#[derive(Message)]
+#[rtype(result = "bool")]
+pub struct RouteSlugAvailable {
+    pub slug: String,
+}
 // TODO: Increment visit and increment unique visit
 
 // #[derive(Message)]
@@ -132,5 +137,18 @@ impl Handler<DeleteRoute> for DbActor {
             .filter(id.eq(msg.id))
             .filter(creator_id.eq(msg.creator_id))
             .get_result::<Route>(&conn)
+    }
+}
+
+impl Handler<RouteSlugAvailable> for DbActor {
+    type Result = bool;
+
+    fn handle(&mut self, msg: RouteSlugAvailable, _: &mut Self::Context) -> Self::Result {
+        let conn = self.0.get().expect("Unable to get a connection");
+
+        routes
+            .filter(slug.eq(msg.slug))
+            .get_result::<Route>(&conn)
+            .is_err()
     }
 }
