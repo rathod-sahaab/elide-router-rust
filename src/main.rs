@@ -52,12 +52,7 @@ async fn main() -> std::io::Result<()> {
     info!("starting up");
 
     HttpServer::new(move || {
-        let cors = Cors::permissive()
-            .allowed_origin("https://console.elide.me")
-            .allowed_origin("http://localhost:8000")
-            .allow_any_header()
-            .allow_any_method()
-            .supports_credentials();
+        let cors = Cors::permissive().max_age(3600 * 24 * 30); // 30 days
 
         App::new()
             .wrap(cors)
@@ -67,9 +62,7 @@ async fn main() -> std::io::Result<()> {
                 // TODO: no magic, just config
                 RedisSession::new("redis:6379", &redis_key)
                     // don't allow the cookie to be accessed from javascript
-                    .cookie_http_only(true)
-                    .cookie_same_site(cookie::SameSite::None)
-                    .cookie_secure(true),
+                    .cookie_http_only(true),
             )
             .service(
                 scope("/api/")
